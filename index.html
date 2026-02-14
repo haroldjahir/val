@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>¿Quieres ser mi San Valentín?</title>
+  <style>
+    /* Fondo blanco (como pediste), pero cute */
+    :root{
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --pink:#ff4d88;
+      --pink2:#ff85b3;
+      --soft:#fff7fb;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      background:#fff;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      padding:24px;
+    }
+
+    .card{
+      width:min(640px, 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:26px 22px;
+      box-shadow: 0 18px 40px rgba(17,24,39,.08);
+      position:relative;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    /* Brillito suave, pero sigue siendo fondo blanco */
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-120px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,77,136,.18), transparent 40%),
+        radial-gradient(circle at 90% 25%, rgba(255,133,179,.12), transparent 45%),
+        radial-gradient(circle at 30% 90%, rgba(255,77,136,.08), transparent 40%);
+      pointer-events:none;
+    }
+
+    .content{ position:relative; }
+
+    .badge{
+      width:52px;height:52px;border-radius:16px;
+      display:grid;place-items:center;
+      border:1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,77,136,.18), rgba(255,133,179,.10));
+      font-size:26px;
+      margin-bottom:12px;
+    }
+
+    h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:-0.02em;
+      line-height:1.2;
+    }
+
+    .sub{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    .btns{
+      margin-top:20px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      appearance:none;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:12px 16px;
+      border-radius:14px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:15px;
+      transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    button:active{ transform: scale(.98); }
+
+    .yes{
+      border-color: rgba(255,77,136,.55);
+      background: linear-gradient(135deg, rgba(255,77,136,.20), rgba(255,133,179,.10));
+      box-shadow: 0 10px 20px rgba(255,77,136,.12);
+    }
+
+    .no{
+      background: var(--soft);
+    }
+
+    .msg{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:14px;
+      line-height:1.4;
+      display:none;
+    }
+
+    .msg.error{
+      display:block;
+      border-color: rgba(255,77,136,.35);
+      background: rgba(255,77,136,.06);
+    }
+
+    .msg.success{
+      display:block;
+      border-color: rgba(34,197,94,.35);
+      background: rgba(34,197,94,.06);
+    }
+
+    .shake{
+      animation: shake .35s ease-in-out;
+    }
+    @keyframes shake{
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* Corazones flotando */
+    .hearts{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      display:none;
+    }
+    .hearts.show{ display:block; }
+    .heart{
+      position:absolute;
+      bottom:-30px;
+      font-size:22px;
+      opacity:0;
+      animation: floatUp 1.9s ease-in forwards;
+      filter: drop-shadow(0 8px 10px rgba(17,24,39,.12));
+    }
+    @keyframes floatUp{
+      0%   { transform: translateY(0) scale(.9); opacity:0; }
+      15%  { opacity:1; }
+      100% { transform: translateY(-520px) scale(1.25); opacity:0; }
+    }
+
+    .footer{
+      margin-top:14px;
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="hearts" id="hearts"></div>
+
+    <div class="content">
+      <div class="badge">💘</div>
+      <h1>¿Quieres ser mi San Valentín?</h1>
+      <p class="sub">Sé honesto… pero también elige con sabiduría 😄</p>
+
+      <div class="btns">
+        <button class="yes" id="yesBtn">Sí 💖</button>
+        <button class="no" id="noBtn">No 🙃</button>
+      </div>
+
+      <div class="msg" id="msgBox"></div>
+
+      <div class="footer">Hecho con mucho cariño ✨</div>
+    </div>
+  </div>
+
+  <script>
+    const card = document.getElementById("card");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const msgBox = document.getElementById("msgBox");
+    const hearts = document.getElementById("hearts");
+
+    function mostrarMensaje(texto, tipo){
+      msgBox.className = "msg " + tipo;
+      msgBox.textContent = texto;
+
+      // Temblor para el "No"
+      card.classList.remove("shake");
+      void card.offsetWidth; // reinicia animación
+      if(tipo === "error") card.classList.add("shake");
+    }
+
+    function lanzarCorazones(){
+      hearts.innerHTML = "";
+      hearts.classList.add("show");
+
+      const emojis = ["💖","💘","💕","💗","💓","❤️"];
+      const cantidad = 18;
+
+      for(let i=0;i<cantidad;i++){
+        const s = document.createElement("div");
+        s.className = "heart";
+        s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        s.style.left = Math.floor(Math.random()*100) + "%";
+        s.style.animationDelay = (Math.random()*0.25) + "s";
+        s.style.fontSize = (18 + Math.random()*18) + "px";
+        hearts.appendChild(s);
+      }
+
+      setTimeout(() => hearts.classList.remove("show"), 2200);
+    }
+
+    yesBtn.addEventListener("click", () => {
+      mostrarMensaje("¡¡SÍÍÍ!! 🥰💐 ¡Me haces muy feliz! 💖", "success");
+      lanzarCorazones();
+
+      // Opcional: deshabilitar botones después del sí
+      yesBtn.disabled = true;
+      noBtn.disabled = true;
+      yesBtn.style.opacity = 0.85;
+      noBtn.style.opacity = 0.6;
+    });
+
+    noBtn.addEventListener("click", () => {
+      mostrarMensaje("Perdón… “No” no es una opción 😅 Intenta otra vez 💘", "error");
+    });
+  </script>
+</body>
+</html>
